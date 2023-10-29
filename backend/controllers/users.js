@@ -1,6 +1,6 @@
 const router = require('express').Router()
 
-const { User, Blog} = require('../models')
+const { User, Blog } = require('../models')
 
 router.get('/', async (req, res) => {
     const users = await User.findAll({
@@ -9,6 +9,49 @@ router.get('/', async (req, res) => {
         }
     })
     res.json(users)
+})
+
+router.get('/:id', async (req, res, next) => {
+    try {
+        const userId = req.params.id
+        const read = req.query.read
+        const where = {}
+
+        if (read === 'true' || read === 'false') {
+            where.read = (read === 'true')
+        }
+
+        const user = await User.findByPk(userId, {
+            attributes: {
+                exclude: ['id']
+            },
+            include: {
+                model: Blog,
+                as: 'readings',
+                attributes: {
+                    exclude: ['userId'],
+                    include: ['yearWritten']
+                },
+                through: {
+                    as: 'readinglists',
+                    attributes: ['read', 'id'],
+                    where
+                },
+            }
+        })
+
+        if (!user) {
+            const error = new Error('User not found');
+            error.name = 'ValidationError';
+            return next(error);
+        }
+
+        res.status(200).json({
+            user
+        })
+    } catch (error) {
+        return next(error)
+    }
 })
 
 router.post('/', async (req, res, next) => {

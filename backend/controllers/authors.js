@@ -1,5 +1,5 @@
-const { fn, col, literal } = require('sequelize');
-const {Blog} = require("../models");
+const { fn, col, literal } = require('sequelize')
+const {Blog} = require("../models")
 const router = require('express').Router()
 
 router.get('/', async (req, res, next) => {
@@ -12,17 +12,17 @@ router.get('/', async (req, res, next) => {
             ],
             group: ['author'],
             order: [[literal('likes DESC')]]
-        });
+        })
 
         const result = author.map(data => ({
             author: data.author,
             articles: data.dataValues.articles,
             likes: data.dataValues.likes
-        }));
+        }))
 
         res.json(result);
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error:', error)
         return next(error)
     }
 });
